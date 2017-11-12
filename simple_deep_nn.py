@@ -86,7 +86,7 @@ def save_model(model, data_split, name):
 if __name__ == '__main__':
 	# Fetch data and make simple split of data
 	rcv1 = fetch_rcv1()
-    simple_split(rcv1)
+    processing.simple_split(rcv1)
 
     # Create model templates
 	m = create_main_model()
