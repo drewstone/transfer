@@ -1,6 +1,7 @@
 import os
 import processing
 import numpy as np
+from sklearn.datasets import fetch_rcv1
 from keras.models import Sequential, Model
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
@@ -83,8 +84,14 @@ def save_model(model, data_split, name):
 	model.save('{}/{}.h5'.format(dirpath, name))
 
 if __name__ == '__main__':
+	# Fetch data and make simple split of data
+	rcv1 = fetch_rcv1()
+    simple_split(rcv1)
+
+    # Create model templates
 	m = create_main_model()
 	s = create_shallow_model()
 
+	# Train and transfer
 	model, intermediate_model, history = train_and_validate(m, data_split='simple', total_amt=100000, validation_split=0.33)
 	shallow_model, shallow_history = transfer_and_repeat(intermediate_model, s, data_split='simple', total_amt=100000, validation_split=0.33)

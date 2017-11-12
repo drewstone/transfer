@@ -1,7 +1,19 @@
+import os
 import random
+import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.datasets import fetch_rcv1
-import numpy as np
+
+
+np.random.seed(7)
+random.seed(7)
+
+def create_dirs(name):
+    if not os.path.exists('./data'):
+        os.makedirs('./data')
+
+    if not os.path.exists('./data/{}'.format(name)):
+        os.makedirs('./data/{}'.format(name))
 
 def save_sparse_csr(filename, array):
     np.savez(filename,data = array.data ,indices=array.indices,
@@ -13,6 +25,7 @@ def load_sparse_csr(filename):
                          shape = loader['shape'])
 
 def random_split(rcv1_obj):
+    create_dirs('random')
     rows = int(rcv1_obj.data.shape[0])
     first_split = random.sample(range(rows), int(rows/2))
     second_split = np.delete(np.arange(rows), first_split, 0)
@@ -28,6 +41,7 @@ def random_split(rcv1_obj):
     save_sparse_csr('data/random/second_labels', second_labels)
 
 def simple_split(rcv1_obj):
+    create_dirs('simple')
     rows = int(rcv1_obj.data.shape[0])
     first_split = np.arange(int(rows/2))
     second_split = np.delete(np.arange(rows), first_split, 0)
