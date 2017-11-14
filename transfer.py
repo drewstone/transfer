@@ -1,5 +1,6 @@
 import os
 import preprocess
+import networks
 import numpy as np
 from sklearn.datasets import fetch_rcv1
 from keras.models import Sequential, Model
@@ -9,11 +10,7 @@ from keras.layers import Dense
 seed = 7
 np.random.seed(seed)
 
-def get_data_split(split_type, split='first', total_amt):
-    data = preprocess.get_data(split_type)
-    return data[0][:total_amt].todense(), data[1][:total_amt].todense()
-
-def train_and_validate(model, data, total_amt=100000, validation_split=0.33):
+def train_and_validate(model, data, validation_split=0.33):
     """
     Trains a model over specified amount of data with specified train/validation split
     """
@@ -37,6 +34,10 @@ def transfer_and_repeat(intermediate_prev_model, shallow_model, data, total_amt=
     history = shallow_model.fit(preds, Y, validation_split=validation_split, batch_size=32)
     return shallow_model, history
 
+def get_data(split_type, total_amt):
+    data = preprocess.get_data(split_type)
+    return [data[i][:total_amt] for i in range(len(data))]
+
 def save_model(model, name):
     if not os.path.exists('./models'):
         os.makedirs('./models')
@@ -45,17 +46,22 @@ def save_model(model, name):
 
 if __name__ == '__main__':
     # Fetch data and make simple split of data
-    rcv1 = fetch_rcv1()
-    preprocess.simple_split(rcv1)
+
+    amount = 100000
+    val_split = 0.67
+
+    X1, Y1, X2, Y2 = get_data('simple')
+    first_half = (X1[:amount].todense(), Y1[:amount].todense())
+    second_half = (X2[:amount].todense(), Y2[:amount].todense())
 
     # Create model templates
-    m = create_main_model()
-    s = create_shallow_model()
+    m, s = networks.create_dnn()
 
     # Train and transfer
-    model, intermediate_model, history = train_and_validate(m, data_split='simple', total_amt=100000, validation_split=0.33)
+    model, intermediate_model, history = train_and_validate(m, data=first_half, validation_split=val_split)
+    shallow_model, shallow_history = transfer_and_repeat(intermediate_model, s, data=second_half, validation_split=val_split)
+
+    # save models for later
     save_model(model, 'simple_model')
     save_model(intermediate_model, 'simple_int_model')
-
-    shallow_model, shallow_history = transfer_and_repeat(intermediate_model, s, data_split='simple', total_amt=100000, validation_split=0.33)
-    save_model(shallow_model, 'shallow_simple_model')
+    save_model(shallow_model, 'simple_shallow_model')

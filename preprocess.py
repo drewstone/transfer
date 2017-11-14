@@ -8,24 +8,19 @@ from sklearn.datasets import fetch_rcv1
 np.random.seed(7)
 random.seed(7)
 
-def get_data(split_type, split):
+def get_data(split_type='random'):
     if os.path.exists('./data/{}'.format(split_type)):
-        X = load_sparse_csr('data/{}/{}_data.npz'.format(split_type, split))
-        Y = load_sparse_csr('data/{}/{}_labels.npz'.format(split_type, split))
-        return (X, Y)
+        X1 = load_sparse_csr('data/{}/first_data.npz'.format(split_type))
+        Y1 = load_sparse_csr('data/{}/first_labels.npz'.format(split_type))
+        X2 = load_sparse_csr('data/{}/second_data.npz'.format(split_type))
+        Y2 = load_sparse_csr('data/{}/second_labels.npz'.format(split_type))
+        return X1, Y1, X2, Y2
     else:
         rcv1 = fetch_rcv1()
-        if split_type == 'random':
-            X1, Y1, X2, Y2 = random_split(rcv1)
-        elif split_type == 'simple':
-            X1, Y1, X2, Y2 = simple_split(rcv1)
-        else:
-            X1, Y1, X2, Y2 = [], [], [], []
-
-        return (X1, Y1) if split == 'first' else (X2, Y2)
+        return split(rcv1, split_type)
 
 def split(rcv1, split_type):
-    rows = int(rcv1_obj.data.shape[0])
+    rows = int(rcv1.data.shape[0])
     if split_type == 'random':
         first_split = random.sample(range(rows), int(rows/2))
         second_split = np.delete(np.arange(rows), first_split, 0)
@@ -37,10 +32,8 @@ def split(rcv1, split_type):
 
 
 def split_and_save(rcv1, split_type, first_split, second_split):
-    x1 = rcv1.data[np.array(first_split)]
-    y1 = rcv1.target[np.array(first_split)]
-    x2 = rcv1.data[np.array(second_split)]
-    y2 = rcv1.target[np.array(second_split)]
+    x1, y1 = rcv1.data[np.array(first_split)], rcv1.target[np.array(first_split)]
+    x2, y2 = rcv1.data[np.array(second_split)], rcv1.target[np.array(second_split)]
 
     create_dirs(split_type)
     save_sparse_csr('data/{}/first_data'.format(split_type), x1)

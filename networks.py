@@ -36,7 +36,7 @@ def create_dnn():
 
     return model, shallow
 
-def create_embedded_dnn():
+def create_embedded_cnn():
     """
     Creates a neural network with an intial embedding layer
     and a convolution layer
@@ -58,6 +58,4 @@ def create_embedded_dnn():
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     return model, shallow
-
-if __name__ == '__main__':
     
