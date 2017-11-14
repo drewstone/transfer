@@ -33,7 +33,6 @@ def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.3
 
     # Compute intermediate transformation from previous intermediate model over new data
     preds = intermediate.predict(X, batch_size=32)
-    print(preds)
 
     # Fit shallower model using predictions and labels of new data
     history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=32)
@@ -55,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--dnn', '-d', action='store_true')
     args = parser.parse_args()
 
-    amount = 100
+    amount = 100000
     val_split = 0.67
 
     # Fetch data and make simple split of data

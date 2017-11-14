@@ -29,3 +29,9 @@ def matthews_correlation(model, X, Y):
 
 	y_pred = np.array([[1 if out[i,j]>=best_threshold[j] else 0 for j in range(Y.shape[1])] for i in range(len(Y))])
 	return y_pred, accuracies, best_threshold
+
+def recall_accuracy(model, X, Y):
+	"""
+	Proportion of true labels vs. what we got
+	"""
+	return
