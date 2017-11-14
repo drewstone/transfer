@@ -1,4 +1,5 @@
 import os
+import argparse
 import preprocess
 import networks
 import numpy as np
@@ -17,26 +18,30 @@ def train_and_validate(model, data, validation_split=0.33):
     X, Y = data
     history = model.fit(X, Y, validation_split=validation_split, batch_size=32)
 
-    # Gets layer 3 output model
-    intermediate_model = Model(inputs=model.input, outputs=model.layers[2].output)
-    return model, intermediate_model, history
+    return model, history
 
-def transfer_and_repeat(intermediate_prev_model, shallow_model, data, total_amt=100000, validation_split=0.33):
+def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.33):
     """
     Trains a new shallower network using second split of data
     given a particular data split, stored in the data directory
     """
-    # Compute intermediate transformation from previous intermediate model over new data
     X, Y = data
-    preds = intermediate_model.predict(X, batch_size=32)
+
+    # Save model weights to load into intermediate model
+    save_model(model, 'temp_model')
+    intermediate.load_weights('models/temp_model.h5', by_name=True)
+
+    # Compute intermediate transformation from previous intermediate model over new data
+    preds = intermediate.predict(X, batch_size=32)
+    print(preds)
 
     # Fit shallower model using predictions and labels of new data
-    history = shallow_model.fit(preds, Y, validation_split=validation_split, batch_size=32)
-    return shallow_model, history
+    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=32)
+    return shallow, history
 
-def get_data(split_type, total_amt):
+def get_data(split_type, amt):
     data = preprocess.get_data(split_type)
-    return [data[i][:total_amt] for i in range(len(data))]
+    return [data[i][:amt] for i in range(len(data))]
 
 def save_model(model, name):
     if not os.path.exists('./models'):
@@ -45,23 +50,28 @@ def save_model(model, name):
     model.save('models/{}.h5'.format(name))
 
 if __name__ == '__main__':
-    # Fetch data and make simple split of data
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--cnn', '-c', action='store_true')
+    parser.add_argument('--dnn', '-d', action='store_true')
+    args = parser.parse_args()
 
-    amount = 100000
+    amount = 100
     val_split = 0.67
 
-    X1, Y1, X2, Y2 = get_data('simple')
-    first_half = (X1[:amount].todense(), Y1[:amount].todense())
-    second_half = (X2[:amount].todense(), Y2[:amount].todense())
+    # Fetch data and make simple split of data
+    X1, Y1, X2, Y2 = [elt.todense() for elt in get_data(split_type='simple', amt=amount)]
+    
+    if args.cnn:
+        # Need to expand dimension for CNN to make sense
+        X1 = np.expand_dims(X1, axis=2)
+        X2 = np.expand_dims(X2, axis=2)
+        main, intermediate, shallow = networks.create_cnn()
+    else:
+        main, intermediate, shallow = networks.create_dnn()
 
-    # Create model templates
-    m, s = networks.create_dnn()
+    # Split data for training/testing for before and after transfer
+    first_half, second_half = (X1, Y1), (X2, Y2)
 
     # Train and transfer
-    model, intermediate_model, history = train_and_validate(m, data=first_half, validation_split=val_split)
-    shallow_model, shallow_history = transfer_and_repeat(intermediate_model, s, data=second_half, validation_split=val_split)
-
-    # save models for later
-    save_model(model, 'simple_model')
-    save_model(intermediate_model, 'simple_int_model')
-    save_model(shallow_model, 'simple_shallow_model')
+    main, history = train_and_validate(main, data=first_half, validation_split=val_split)
+    shallow, shallow_history = transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
