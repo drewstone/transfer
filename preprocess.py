@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import random
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -20,6 +22,7 @@ def get_data(split_type='random'):
         return split(rcv1, split_type)
 
 def split(rcv1, split_type):
+    data = json.load(open('categories.json'))
     rows = int(rcv1.data.shape[0])
     if split_type == 'random':
         first_split = random.sample(range(rows), int(rows/2))
@@ -27,6 +30,14 @@ def split(rcv1, split_type):
     elif split_type == 'simple':
         first_split = np.arange(int(rows/2))
         second_split = np.delete(np.arange(rows), first_split, 0)
+    elif split_type == 'c_topics':
+        rgx = re.compile('C[0-9]')
+        splitvec = np.zeros(len(data.keys()))
+        for inx, elt in enumerate(data.keys()):
+            if rgx.match(elt):
+                splitvec[inx] = 1
+        print(splitvec)
+
 
     return split_and_save(rcv1, split_type, first_split, second_split)
 
@@ -47,7 +58,7 @@ def save_sparse_csr(filename, array):
     np.savez(filename,data = array.data ,indices=array.indices,
              indptr =array.indptr, shape=array.shape )
 
-def load_sparse_csr(filename):
+def load_parse_csr(filename):
     loader = np.load(filename)
     return csr_matrix((  loader['data'], loader['indices'], loader['indptr']),
                          shape = loader['shape'])
@@ -61,5 +72,4 @@ def create_dirs(name):
 
 if __name__ == '__main__':
     rcv1 = fetch_rcv1()
-    random_split(rcv1)
-    simple_split(rcv1)
+    split(rcv1, 'c_topics')

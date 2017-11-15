@@ -4,6 +4,8 @@ import preprocess
 import networks
 import numpy as np
 from sklearn.datasets import fetch_rcv1
+
+import keras
 from keras.models import Sequential, Model
 from keras.layers import Dense
 
@@ -11,16 +13,17 @@ from keras.layers import Dense
 seed = 7
 np.random.seed(seed)
 
-def train_and_validate(model, data, validation_split=0.33):
+def train_and_validate(model, data, validation_split=0.33, epochs=10):
     """
     Trains a model over specified amount of data with specified train/validation split
     """
     X, Y = data
-    history = model.fit(X, Y, validation_split=validation_split, batch_size=32)
+    time_callback = TimeHistory()
+    history = model.fit(X, Y, validation_split=validation_split, batch_size=32, epochs=epochs, callbacks=[time_callback])
 
-    return model, history
+    return model, history, time_callback
 
-def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.33):
+def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.33, epochs=10):
     """
     Trains a new shallower network using second split of data
     given a particular data split, stored in the data directory
@@ -35,8 +38,9 @@ def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.3
     preds = intermediate.predict(X, batch_size=32)
 
     # Fit shallower model using predictions and labels of new data
-    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=32)
-    return shallow, history
+    time_callback = TimeHistory()
+    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=32, epochs=epochs, callbacks=[time_callback])
+    return shallow, history, time_callback
 
 def get_data(split_type, amt):
     data = preprocess.get_data(split_type)
@@ -47,6 +51,16 @@ def save_model(model, name):
         os.makedirs('./models')
 
     model.save('models/{}.h5'.format(name))
+
+class TimeHistory(keras.callbacks.Callback):
+    def on_train_begin(self, logs={}):
+        self.times = []
+
+    def on_epoch_begin(self, batch, logs={}):
+        self.epoch_time_start = time.time()
+
+    def on_epoch_end(self, batch, logs={}):
+        self.times.append(time.time() - self.epoch_time_start)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -65,6 +79,8 @@ if __name__ == '__main__':
         X1 = np.expand_dims(X1, axis=2)
         X2 = np.expand_dims(X2, axis=2)
         main, intermediate, shallow = networks.create_cnn()
+    elif args.dnn:
+        main, intermediate, shallow = networks.create_dnn()
     else:
         main, intermediate, shallow = networks.create_dnn()
 
@@ -72,5 +88,5 @@ if __name__ == '__main__':
     first_half, second_half = (X1, Y1), (X2, Y2)
 
     # Train and transfer
-    main, history = train_and_validate(main, data=first_half, validation_split=val_split)
-    shallow, shallow_history = transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
+    main, history, time_cb = train_and_validate(main, data=first_half, validation_split=val_split)
+    shallow, shallow_history, time_cb = transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
