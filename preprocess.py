@@ -49,7 +49,7 @@ def split(rcv1, split_type):
         first_split, second_split, holdout_split = [], [], []
         for inx, elt in enumerate(rcv1.target):
             elt_ind = find(elt)[1]
-            elt_max_ind, elt_min_ind = np.amax(splitvec_ind), np.amin(splitvec_ind)
+            elt_max_ind, elt_min_ind = np.amax(elt_ind), np.amin(elt_ind)
 
             if elt_max_ind <= max_ind:
                 first_split.append(inx)
