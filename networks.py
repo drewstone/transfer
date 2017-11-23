@@ -103,7 +103,7 @@ def create_cnn():
 
     return model, intermediate, shallow
 
-def create_deeper_cnn():
+def create_wider_cnn():
     """
     Creates a simple convolutional net
     with a single conv layer
