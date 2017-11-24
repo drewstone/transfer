@@ -108,6 +108,7 @@ def split(features, labels, split_type, holdout_split=None):
 
     first = reusable_split(features, labels, first_split)
     second = reusable_split(features, labels, second_split)
+    holdout = None
 
     if holdout_split:
         holdout = reusable_split(features, labels, holdout_split)

@@ -1,5 +1,8 @@
 .DS_STORE
-data
 __pycache__
 .ipynb_checkpoints
+
+data
+logs
+plots
 models
