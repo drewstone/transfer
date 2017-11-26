@@ -84,7 +84,7 @@ def create_cnn():
     model.add(GlobalMaxPooling1D(name='gmp-layer'))
     model.add(Dense(256, activation='relu', name='dense-layer1'))
     model.add(Dropout(0.2, name='drop-layer1'))
-    model.add(Dense(256, activation='sigmoid'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(103, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -95,7 +95,8 @@ def create_cnn():
     intermediate.add(Dropout(0.2, name='drop-layer1'))
     intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    shallow.add(Dense(256, activation='sigmoid'))
+    shallow = Sequential()
+    shallow.add(Dense(256, activation='relu', input_dim=256))
     shallow.add(Dense(103, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -111,7 +112,7 @@ def create_wider_cnn():
     model.add(GlobalMaxPooling1D(name='gmp-layer'))
     model.add(Dense(256, activation='relu', name='dense-layer1'))
     model.add(Dropout(0.2, name='drop-layer1'))
-    model.add(Dense(256, activation='sigmoid'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(103, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -122,7 +123,8 @@ def create_wider_cnn():
     intermediate.add(Dropout(0.2, name='drop-layer1'))
     intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    shallow.add(Dense(256, activation='sigmoid'))
+    shallow = Sequential()
+    shallow.add(Dense(256, activation='relu', input_dim=256))
     shallow.add(Dense(103, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -141,8 +143,8 @@ def create_large_cnn():
     model.add(Conv1D(128, 3, activation='relu', name='conv-layer4'))
     model.add(GlobalAveragePooling1D(name='gp-layer'))
     model.add(Dropout(0.5, name='dropout'))
-    model.add(Dense(256, activation='sigmoid', name='dense-layer'))
-    model.add(Dense(256, activation='sigmoid'))
+    model.add(Dense(256, activation='relu', name='dense-layer'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(103, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -154,12 +156,12 @@ def create_large_cnn():
     intermediate.add(Conv1D(128, 3, activation='relu', name='conv-layer4'))
     intermediate.add(GlobalAveragePooling1D(name='gp-layer'))
     intermediate.add(Dropout(0.5, name='dropout'))
-    intermediate.add(Dense(256, activation='sigmoid', name='dense-layer'))
+    intermediate.add(Dense(256, activation='relu', name='dense-layer'))
     intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 
     shallow = Sequential()
-    shallow.add(Dense(256, activation='sigmoid', input_dim=128))
+    shallow.add(Dense(256, activation='relu', input_dim=256))
     shallow.add(Dense(103, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 

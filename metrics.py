@@ -19,7 +19,7 @@ def matthews_correlation(model, X, Y):
         y_prob = np.array(out[:,i])
         for j in threshold:
             y_pred = [1 if prob>=j else 0 for prob in y_prob]
-            acc.append( matthews_corrcoef(Y[:,i].todense(),y_pred))
+            acc.append( matthews_corrcoef(Y[:,i],y_pred))
         acc   = np.array(acc)
         index = np.where(acc==acc.min())
         accuracies.append(acc.max()) 
