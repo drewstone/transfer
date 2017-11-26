@@ -22,7 +22,7 @@ def train_and_validate(model, data, validation_split=0.33, epochs=10):
     """
     X, Y = data
     cbs = callbacks.get_callbacks(name="initial_training")
-    history = model.fit(X, Y, validation_split=validation_split, batch_size=32, epochs=epochs, callbacks=cbs)
+    history = model.fit(X, Y, validation_split=validation_split, batch_size=64, epochs=epochs, callbacks=cbs)
 
     return model, history, cbs
 
@@ -38,13 +38,13 @@ def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.3
     intermediate.load_weights('models/temp_model.h5', by_name=True)
 
     # Compute intermediate transformation from previous intermediate model over new data
-    preds = intermediate.predict(X, batch_size=32)
+    preds = intermediate.predict(X, batch_size=64)
 
     # Fit shallower model using predictions and labels of new data
     cbs = callbacks.get_callbacks(name="transfer_training")
-    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=32, epochs=epochs, callbacks=cbs)
+    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=64, epochs=epochs, callbacks=cbs)
     
-    return shallow, history, cbs
+    return intermediate, shallow, history, cbs
 
 def get_data(split_type, amt):
     data = preprocess.get_data(split_type)
@@ -54,13 +54,13 @@ def get_data(split_type, amt):
         first, second = data
         X1, Y1 = first
         X2, Y2 = second
-        return X1[:amt].todense(), Y1[:amt].todense(), X2[:amt].todense(), Y2[:amt].todense()
+        return X1[:amt].todense(), Y1[:amt].todense(), X2[:amt].todense(), Y2[:amt].todense(), X1[amt:amt+50000].todense(), Y1[amt:amt+50000].todense()
     elif split_type in ["c_topics", "g_topics", "e_topics", "m_topics"]:
         first, second, holdout = data
         X1, Y1 = first
         X2, Y2 = second
         X3, Y3 = holdout
-        return X1[:amt].todense(), Y1[:amt].todense(), X2[:amt].todense(), Y2[:amt].todense(), X3[:amt].todense(), Y3[:amt].todense()
+        return X1[:amt].todense(), Y1[:amt].todense(), X2[:amt].todense(), Y2[:amt].todense(), X3[:50000].todense(), Y3[:50000].todense()
 
 def save_model(model, name):
     if not os.path.exists('./models'):

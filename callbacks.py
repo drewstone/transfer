@@ -32,6 +32,7 @@ class PlotLosses(keras.callbacks.Callback):
         plt.plot(self.x, self.val_losses, label="val_loss")
         plt.legend()
         plt.savefig('./plots/{}-loss-{}.png'.format(self.name, self.i));
+        plt.clf()
 
 class TimeHistory(keras.callbacks.Callback):
     def __init__(self, name):
@@ -49,4 +50,4 @@ class TimeHistory(keras.callbacks.Callback):
 def get_callbacks(name):
     timing = TimeHistory(name)
     plotlosses = PlotLosses(name)
-    return [timing, plotlosses]
+    return []

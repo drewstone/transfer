@@ -16,21 +16,21 @@ def create_dnn():
     3 hidden layers of 256 neurons
     """
     model = Sequential()
-    model.add(Dense(256, activation='sigmoid', input_dim=47236, name='dense-input'))
-    model.add(Dense(256, activation='sigmoid', name='dense-layer2'))
-    model.add(Dense(256, activation='sigmoid', name='dense-layer3'))
-    model.add(Dense(256, activation='sigmoid'))
+    model.add(Dense(256, activation='relu', input_dim=47236, name='dense-input'))
+    model.add(Dense(256, activation='relu', name='dense-layer2'))
+    model.add(Dense(256, activation='relu', name='dense-layer3'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(103, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     intermediate = Sequential()
-    intermediate.add(Dense(256, activation='sigmoid', input_dim=47236, name='dense-input'))
-    intermediate.add(Dense(256, activation='sigmoid', name='dense-layer2'))
-    intermediate.add(Dense(256, activation='sigmoid', name='dense-layer3'))
+    intermediate.add(Dense(256, activation='relu', input_dim=47236, name='dense-input'))
+    intermediate.add(Dense(256, activation='relu', name='dense-layer2'))
+    intermediate.add(Dense(256, activation='relu', name='dense-layer3'))
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
     shallow = Sequential()
-    shallow.add(Dense(256, activation='sigmoid', input_dim=256))
+    shallow.add(Dense(256, activation='relu', input_dim=256))
     shallow.add(Dense(103, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
@@ -44,8 +44,7 @@ def create_mlp():
     3 hidden layers of 256 neurons
     """
     model = Sequential()
-    model.add(BatchNormalization(input_shape=(47236, 1), name='batch-norm1'))
-    model.add(Dense(256, activation='relu', name='dense-layer1'))
+    model.add(Dense(256, activation='relu', input_dim=47236, name='dense-layer1'))
     model.add(Dropout(rate=0.5, name='drop-layer1'))
     model.add(BatchNormalization(name='batch-norm2'))
     model.add(Dense(256, activation='relu', name='dense-layer2'))
@@ -53,13 +52,12 @@ def create_mlp():
     model.add(BatchNormalization(name='batch-norm3'))
     model.add(Dense(256, activation='relu', name='dense-layer3'))
     model.add(Dropout(rate=0.5, name='drop-layer3'))
-    model.add(Dense(256, activation='sigmoid'))
+    model.add(Dense(256, activation='relu'))
     model.add(Dense(103, activation='sigmoid'))
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
     intermediate = Sequential()
-    intermediate.add(BatchNormalization(input_shape=(47236, 1), name='batch-norm1'))
-    intermediate.add(Dense(256, activation='relu', name='dense-layer1'))
+    intermediate.add(Dense(256, activation='relu', input_dim=47236, name='dense-layer1'))
     intermediate.add(Dropout(rate=0.5, name='drop-layer1'))
     intermediate.add(BatchNormalization(name='batch-norm2'))
     intermediate.add(Dense(256, activation='relu', name='dense-layer2'))
@@ -70,7 +68,7 @@ def create_mlp():
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
     shallow = Sequential()
-    shallow.add(Dense(256, activation='sigmoid', input_dim=256))
+    shallow.add(Dense(256, activation='relu', input_dim=256))
     shallow.add(Dense(103, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 

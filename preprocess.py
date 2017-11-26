@@ -52,7 +52,7 @@ def split(features, labels, split_type, holdout_split=None):
 
             if elt_max_ind <= max_ind and elt_min_ind >= min_ind:
                 f.append(inx)
-            elif elt_min_ind > max_ind:
+            elif elt_min_ind > max_ind or elt_max_ind < min_ind:
                 s.append(inx)
             else:
                 h.append(inx)
