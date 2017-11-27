@@ -48,6 +48,23 @@ def run(network="dnn", amount=100, val_split=0.5, split_type="simple", name="exp
 
     return (main, history, cbs), (shallow, shallow_history, shallow_cbs), (main_result, shallow_result)
 
+def run_new():
+    val_split=0.5
+    X1, Y1, X2, Y2, X3, Y3 = transfer.get_data(split_type='c_topics', amt=20000)
+
+    main, intermediate, shallow = networks.create_dnn()
+    seconddeep, _, _ = networks.create_dnn()
+
+    first_half = (X1, Y1)
+    second_half = (X2, Y2)
+
+    main, history, cbs = transfer.train_and_validate(main, data=first_half, validation_split=val_split)
+    intermediate, shallow, shallow_history, shallow_cbs = transfer.transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
+
+    seconddeep, second_history, second_cbs = transfer.train_and_validate(seconddeep, data=second_half, validation_split=val_split)
+
+    plotting.plot_metrics()
+
 def run_dnns(amount=50000, val_split=0.5, name="exp"):
     networks = ["dnn", "mlp"]
     split_types = ["random", "c_topics", "g_topics", "e_topics", "m_topics"]

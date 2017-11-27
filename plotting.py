@@ -38,6 +38,36 @@ def plot_times(time_cb, name):
     plt.savefig("./plots/{}-times.png".format(name))
     plt.clf()
 
+def plot_single_model(name, model, x_test, y_test):
+    main_result = metrics.matthews_correlation(model, x_test, y_test)
+
+    y_pred, main_accuracies, best_threshold = main_result
+    
+    plt.clf()
+    plt.figure(figsize=(40,9))
+    plt.bar(np.arange(1,104), main_accuracies, align="center", alpha=0.5)
+    plt.xticks(np.arange(1,104))
+    plt.xlabel("document labels")
+    plt.ylabel("accuracy")
+    plt.title("main model accuracies using matthews coefficient")
+    plt.savefig("./plots/{}-main-accuracies.png".format(name))
+    plt.clf()
+
+    return main_accuracies
+
+def plot_difference(name, accuracies1, accuracies2):
+    differences = np.array(accuracies1) - np.array(accuracies2)
+
+    plt.clf()
+    plt.figure(figsize=(40,9))
+    plt.bar(np.arange(1,104), differences, align="center", alpha=0.5)
+    plt.xticks(np.arange(1,104))
+    plt.xlabel("document labels")
+    plt.ylabel("accuracy difference")
+    plt.title("accuracy differences from 2 networks")
+    plt.savefig("./plots/{}-difference-accuracies.png".format(name))
+    plt.clf()
+
 def plot_metrics(name, model, intermediate, shallow, x_test, y_test):
     main_result = metrics.matthews_correlation(model, x_test, y_test)
     interm_preds = intermediate.predict(x_test)
