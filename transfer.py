@@ -96,6 +96,6 @@ if __name__ == '__main__':
 
     # Train and transfer
     main, history, cbs = train_and_validate(main, data=first_half, validation_split=val_split)
-    shallow, shallow_history, shallow_cbs = transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
+    intermediate, shallow, shallow_history, shallow_cbs = transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
     plotting.plot_acc(history, name="main")
     plotting.plot_acc(shallow_history, name="shallow")
