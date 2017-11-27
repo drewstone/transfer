@@ -47,7 +47,7 @@ def run(network="dnn", amount=100, val_split=0.5, split_type="simple", name="exp
 
     return (main, history, cbs), (shallow, shallow_history, shallow_cbs), (main_result, shallow_result)
 
-def run_all(amount=50000, val_split=0.5, name="exp"):
+def run_dnns(amount=50000, val_split=0.5, name="exp"):
     networks = ["dnn", "mlp"]
     split_types = ["random", "c_topics", "g_topics", "e_topics", "m_topics"]
 
@@ -55,8 +55,13 @@ def run_all(amount=50000, val_split=0.5, name="exp"):
         for iinx, network in enumerate(networks):
             run(network=network, amount=amount, val_split=val_split, split_type=split_type, name=name)
 
-def run_cnns(amount=100, val_split=0.5, name="cnn-exp"):
-    run(network="cnn", amount=amount, val_split=val_split, split_type="simple", name=name)
+def run_cnns(amount=50000, val_split=0.5, name="cnn-exp"):
+    networks = ["cnn", "wide_cnn"]
+    split_types = ["random", "c_topics", "g_topics", "e_topics", "m_topics"]
+
+    for inx, split_type in enumerate(split_types):
+        for iinx, network in enumerate(networks):
+            run(network=network, amount=amount, val_split=val_split, split_type=split_type, name=name)
 
 if __name__ == "__main__":
     run_cnns()
