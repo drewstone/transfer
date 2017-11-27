@@ -44,6 +44,7 @@ def run(network="dnn", amount=100, val_split=0.5, split_type="simple", name="exp
     transfer.save_model(shallow, "{}-shallow".format(unique_name))
 
     main_result, shallow_result = plotting.plot_metrics(unique_name, main, intermediate, shallow, X3, Y3)
+    plotting.plot_acc(history, name)
 
     return (main, history, cbs), (shallow, shallow_history, shallow_cbs), (main_result, shallow_result)
 
@@ -64,4 +65,4 @@ def run_cnns(amount=50000, val_split=0.5, name="cnn-exp"):
             run(network=network, amount=amount, val_split=val_split, split_type=split_type, name=name)
 
 if __name__ == "__main__":
-    run_cnns()
+    run(network='dnn', amount=50000, val_split=0.5, split_type='c_topics', name='test')
