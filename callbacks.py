@@ -50,4 +50,4 @@ class TimeHistory(keras.callbacks.Callback):
 def get_callbacks(name):
     timing = TimeHistory(name)
     plotlosses = PlotLosses(name)
-    return []
+    return [timing]

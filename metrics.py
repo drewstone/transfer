@@ -26,8 +26,7 @@ def matthews_correlation(model, X, Y):
         best_threshold[i] = threshold[index[0][0]]
         acc = []
 
-    # y_pred = np.array([[1 if out[i,j]>=best_threshold[j] else 0 for j in range(Y.shape[1])] for i in range(len(Y))])
-    return None, accuracies, best_threshold
+    return accuracies, best_threshold
 
 def recall_accuracy(model, X, Y):
     """

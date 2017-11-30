@@ -6,80 +6,69 @@ import plotting
 def run(network="dnn", amount=100, val_split=0.5, split_type="simple", name="experiment"):
 
     # Fetch data and make simple split of data
-    X1, Y1, X2, Y2, X3, Y3 = transfer.get_data(split_type=split_type, amt=amount)
+    X1, Y1, X2, Y2, first_ind, second_ind = transfer.get_data(split_type=split_type, amt=amount*2)
 
-    if network == "cnn":
-        # Need to expand dimension for CNN to make sense
-        X1, X2, X3 = np.expand_dims(X1, axis=2), np.expand_dims(X2, axis=2), np.expand_dims(X3, axis=2)
-        main, intermediate, shallow = networks.create_cnn()
-    
-    elif network == "dnn":
-        main, intermediate, shallow = networks.create_dnn()
-    
+    # split data on specified axes
+    for inx, elt in enumerate(Y1):
+        if inx == 0:
+            firstY1 = np.take(elt, first_ind)
+        else:
+            firstY1 = np.vstack((firstY1, np.take(elt, first_ind)))
+
+    for inx, elt in enumerate(Y2):
+        if inx == 0:
+            secondY2 = np.take(elt, second_ind)
+        else:
+            secondY2 = np.vstack((secondY2, np.take(elt, second_ind)))
+
+    if network == "dnn":
+        first_model, intermediate, intermediate_transferred_model, second_model, shallow = networks.create_dnn(
+            first_output_dim=len(first_ind),
+            second_output_dim=len(second_ind),
+            input_dim=X1.shape[1],
+        )
     elif network == "mlp":
-        main, intermediate, shallow = networks.create_mlp()
-    
-    elif network == "wide_cnn":
-        X1, X2, X3 = np.expand_dims(X1, axis=2), np.expand_dims(X2, axis=2), np.expand_dims(X3, axis=2)
-        main, intermediate, shallow = networks.create_wider_cnn()
-    
-    elif network == "large_cnn":
-        X1, X2, X3 = np.expand_dims(X1, axis=2), np.expand_dims(X2, axis=2), np.expand_dims(X3, axis=2)
-        main, intermediate, shallow = networks.create_large_cnn()
-    
-    else:
-        main, intermediate, shallow = networks.create_dnn()
+        first_model, intermediate, intermediate_transferred_model, second_model, shallow = networks.create_mlp(
+            first_output_dim=len(first_ind),
+            second_output_dim=len(second_ind),
+            input_dim=X1.shape[1],
+        )
 
     # Split data for training/testing for before and after transfer
-    first_half = (X1, Y1)
-    second_half = (X2, Y2)
+    first_half = (X1[:amount], firstY1[:amount])
+    second_half = (X2[:amount], secondY2[:amount])
 
-    # Train and transfer
-    main, history, cbs = transfer.train_and_validate(main, data=first_half, validation_split=val_split)
-    intermediate, shallow, shallow_history, shallow_cbs = transfer.transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
+    # Train main network on first data split
+    train_result = transfer.train_and_validate(first_model, data=first_half, validation_split=val_split)
+    trained_first_model, history, first_cb = train_result
 
-    unique_name = "{}-{}-{}".format(network, split_type, name)
-    transfer.save_model(main, "{}-main".format(unique_name))
-    transfer.save_model(intermediate, "{}-intermediate".format(unique_name))
-    transfer.save_model(shallow, "{}-shallow".format(unique_name))
+    # Transfer weights and train shallow model on second data split
+    transfer_result = transfer.transfer_and_repeat(trained_first_model, intermediate, shallow, data=second_half, validation_split=val_split)
+    transferred_intermediate, trained_shallow, shallow_history, shallow_cb = transfer_result
 
-    main_result, shallow_result = plotting.plot_metrics(unique_name, main, intermediate, shallow, X3, Y3)
-    plotting.plot_acc(history, name)
+    # Transfer weights to deep intermediate network and train on second data split
+    intermediate_transferred_model = transfer.load_weights_by_name(trained_first_model, intermediate_transferred_model)
+    train_result = transfer.train_and_validate(intermediate_transferred_model, data=second_half, validation_split=val_split)
+    trained_interm_model, interm_history, interm_cb = train_result
 
-    return (main, history, cbs), (shallow, shallow_history, shallow_cbs), (main_result, shallow_result)
+    # Train last deep network on second data split
+    train_result = transfer.train_and_validate(second_model, data=second_half, validation_split=val_split)
+    trained_second_model, second_history, second_cb = train_result
 
-def run_new():
-    val_split=0.5
-    X1, Y1, X2, Y2, X3, Y3 = transfer.get_data(split_type='c_topics', amt=20000)
+    unique_name = '{}-{}-{}-{}'.format(amount, network, split_type, name)
+    plotting.plot_acc(unique_name, history, interm_history, second_history, shallow_history)
+    plotting.plot_times(unique_name, first_cb, interm_cb, second_cb, shallow_cb)
+    plotting.plot_metrics(unique_name, transferred_intermediate, trained_shallow, trained_interm_model, trained_second_model, X2[amount:], secondY2[amount:])
 
-    main, intermediate, shallow = networks.create_dnn()
-    seconddeep, _, _ = networks.create_dnn()
+    transfer.save_model(trained_first_model, "first-{}".format(unique_name))
+    transfer.save_model(trained_interm_model, "interm-{}".format(unique_name))
+    transfer.save_model(trained_second_model, "first-{}".format(unique_name))
+    transfer.save_model(trained_shallow, "shallow-{}".format(unique_name))
 
-    first_half = (X1, Y1)
-    second_half = (X2, Y2)
-
-    main, history, cbs = transfer.train_and_validate(main, data=first_half, validation_split=val_split)
-    intermediate, shallow, shallow_history, shallow_cbs = transfer.transfer_and_repeat(main, intermediate, shallow, data=second_half, validation_split=val_split)
-
-    seconddeep, second_history, second_cbs = transfer.train_and_validate(seconddeep, data=second_half, validation_split=val_split)
-
-    plotting.plot_metrics()
-
-def run_dnns(amount=50000, val_split=0.5, name="exp"):
+if __name__ == '__main__':
     networks = ["dnn", "mlp"]
-    split_types = ["random", "c_topics", "g_topics", "e_topics", "m_topics"]
+    split_types = ["simple", "random", "c_topics", "g_topics", "e_topics", "m_topics"]
 
     for inx, split_type in enumerate(split_types):
         for iinx, network in enumerate(networks):
-            run(network=network, amount=amount, val_split=val_split, split_type=split_type, name=name)
-
-def run_cnns(amount=50000, val_split=0.5, name="cnn-exp"):
-    networks = ["cnn", "wide_cnn"]
-    split_types = ["random", "c_topics", "g_topics", "e_topics", "m_topics"]
-
-    for inx, split_type in enumerate(split_types):
-        for iinx, network in enumerate(networks):
-            run(network=network, amount=amount, val_split=val_split, split_type=split_type, name=name)
-
-if __name__ == "__main__":
-    run(network='dnn', amount=50000, val_split=0.5, split_type='c_topics', name='test')
+            run(network=network, amount=40000, val_split=0.5, split_type=split_type, name="experiment")

@@ -8,20 +8,19 @@ from keras.models import Model
 # fix random seed for reproducibility
 np.random.seed(7)
 
-
-def create_dnn():
+def create_dnn(first_output_dim, second_output_dim, input_dim=47236):
     """
     Creates a basic deep neural network model
     Input dimension matches a 47236 dimension feature vector
     3 hidden layers of 256 neurons
     """
-    model = Sequential()
-    model.add(Dense(256, activation='relu', input_dim=47236, name='dense-input'))
-    model.add(Dense(256, activation='relu', name='dense-layer2'))
-    model.add(Dense(256, activation='relu', name='dense-layer3'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(103, activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    first_model = Sequential()
+    first_model.add(Dense(256, activation='relu', input_dim=input_dim, name='dense-input'))
+    first_model.add(Dense(256, activation='relu', name='dense-layer2'))
+    first_model.add(Dense(256, activation='relu', name='dense-layer3'))
+    first_model.add(Dense(256, activation='relu'))
+    first_model.add(Dense(first_output_dim, activation='sigmoid'))
+    first_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     intermediate = Sequential()
     intermediate.add(Dense(256, activation='relu', input_dim=47236, name='dense-input'))
@@ -29,32 +28,48 @@ def create_dnn():
     intermediate.add(Dense(256, activation='relu', name='dense-layer3'))
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
+    intermediate_transferred_model = Sequential()
+    intermediate_transferred_model.add(Dense(256, activation='relu', input_dim=input_dim, name='dense-input'))
+    intermediate_transferred_model.add(Dense(256, activation='relu', name='dense-layer2'))
+    intermediate_transferred_model.add(Dense(256, activation='relu', name='dense-layer3'))
+    intermediate_transferred_model.add(Dense(256, activation='relu'))
+    intermediate_transferred_model.add(Dense(second_output_dim, activation='sigmoid'))
+    intermediate_transferred_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    second_model = Sequential()
+    second_model.add(Dense(256, activation='relu', input_dim=input_dim))
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dense(second_output_dim, activation='sigmoid'))
+    second_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
     shallow = Sequential()
     shallow.add(Dense(256, activation='relu', input_dim=256))
-    shallow.add(Dense(103, activation='sigmoid'))
+    shallow.add(Dense(second_output_dim, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    return model, intermediate, shallow
+    return first_model, intermediate, intermediate_transferred_model, second_model, shallow
 
 
-def create_mlp():
+def create_mlp(first_output_dim, second_output_dim, input_dim=47236):
     """
     Creates a basic deep neural network model
     Input dimension matches a 47236 dimension feature vector
     3 hidden layers of 256 neurons
     """
-    model = Sequential()
-    model.add(Dense(256, activation='relu', input_dim=47236, name='dense-layer1'))
-    model.add(Dropout(rate=0.5, name='drop-layer1'))
-    model.add(BatchNormalization(name='batch-norm2'))
-    model.add(Dense(256, activation='relu', name='dense-layer2'))
-    model.add(Dropout(rate=0.5, name='drop-layer2'))
-    model.add(BatchNormalization(name='batch-norm3'))
-    model.add(Dense(256, activation='relu', name='dense-layer3'))
-    model.add(Dropout(rate=0.5, name='drop-layer3'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(103, activation='sigmoid'))
-    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    first_model = Sequential()
+    first_model.add(Dense(256, activation='relu', input_dim=input_dim, name='dense-layer1'))
+    first_model.add(Dropout(rate=0.5, name='drop-layer1'))
+    first_model.add(BatchNormalization(name='batch-norm2'))
+    first_model.add(Dense(256, activation='relu', name='dense-layer2'))
+    first_model.add(Dropout(rate=0.5, name='drop-layer2'))
+    first_model.add(BatchNormalization(name='batch-norm3'))
+    first_model.add(Dense(256, activation='relu', name='dense-layer3'))
+    first_model.add(Dropout(rate=0.5, name='drop-layer3'))
+    first_model.add(Dense(256, activation='relu'))
+    first_model.add(Dense(first_output_dim, activation='sigmoid'))
+    first_model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
     intermediate = Sequential()
     intermediate.add(Dense(256, activation='relu', input_dim=47236, name='dense-layer1'))
@@ -67,105 +82,38 @@ def create_mlp():
     intermediate.add(Dropout(rate=0.5, name='drop-layer3'))
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-    shallow = Sequential()
-    shallow.add(Dense(256, activation='relu', input_dim=256))
-    shallow.add(Dense(103, activation='sigmoid'))
-    shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    intermediate_transferred_model = Sequential()
+    intermediate_transferred_model.add(Dense(256, activation='relu', input_dim=input_dim, name='dense-layer1'))
+    intermediate_transferred_model.add(Dropout(rate=0.5, name='drop-layer1'))
+    intermediate_transferred_model.add(BatchNormalization(name='batch-norm2'))
+    intermediate_transferred_model.add(Dense(256, activation='relu', name='dense-layer2'))
+    intermediate_transferred_model.add(Dropout(rate=0.5, name='drop-layer2'))
+    intermediate_transferred_model.add(BatchNormalization(name='batch-norm3'))
+    intermediate_transferred_model.add(Dense(256, activation='relu', name='dense-layer3'))
+    intermediate_transferred_model.add(Dropout(rate=0.5, name='drop-layer3'))
+    intermediate_transferred_model.add(Dense(256, activation='relu'))
+    intermediate_transferred_model.add(Dense(second_output_dim, activation='sigmoid'))
+    intermediate_transferred_model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-    return model, intermediate, shallow
-
-def create_cnn():
-    """
-    Creates a simple convolutional net
-    with a single conv layer
-    """
-    model = Sequential()
-    model.add(Conv1D(64, 3, padding='valid', activation='relu', strides=1, input_shape=(47236, 1), name='conv-input'))
-    model.add(GlobalMaxPooling1D(name='gmp-layer'))
-    model.add(Dense(256, activation='relu', name='dense-layer1'))
-    model.add(Dropout(0.2, name='drop-layer1'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(103, activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    intermediate = Sequential()
-    intermediate.add(Conv1D(64, 3, padding='valid', activation='relu', strides=1, input_shape=(47236, 1), name='conv-input'))
-    intermediate.add(GlobalMaxPooling1D(name='gmp-layer'))
-    intermediate.add(Dense(256, activation='relu', name='dense-layer1'))
-    intermediate.add(Dropout(0.2, name='drop-layer1'))
-    intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    second_model = Sequential()
+    second_model.add(Dense(256, activation='relu', input_dim=input_dim))
+    second_model.add(Dropout(rate=0.5))
+    second_model.add(BatchNormalization())
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dropout(rate=0.5))
+    second_model.add(BatchNormalization())
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dropout(rate=0.5))
+    second_model.add(Dense(256, activation='relu'))
+    second_model.add(Dense(second_output_dim, activation='sigmoid'))
+    second_model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
     shallow = Sequential()
     shallow.add(Dense(256, activation='relu', input_dim=256))
-    shallow.add(Dense(103, activation='sigmoid'))
+    shallow.add(Dense(second_output_dim, activation='sigmoid'))
     shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    return model, intermediate, shallow
-
-def create_wider_cnn():
-    """
-    Creates a simple convolutional net
-    with a single conv layer
-    """
-    model = Sequential()
-    model.add(Conv1D(256, 3, padding='valid', activation='relu', strides=1, input_shape=(47236, 1), name='conv-input'))
-    model.add(GlobalMaxPooling1D(name='gmp-layer'))
-    model.add(Dense(256, activation='relu', name='dense-layer1'))
-    model.add(Dropout(0.2, name='drop-layer1'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(103, activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    intermediate = Sequential()
-    intermediate.add(Conv1D(256, 3, padding='valid', activation='relu', strides=1, input_shape=(47236, 1), name='conv-input'))
-    intermediate.add(GlobalMaxPooling1D(name='gmp-layer'))
-    intermediate.add(Dense(256, activation='relu', name='dense-layer1'))
-    intermediate.add(Dropout(0.2, name='drop-layer1'))
-    intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    shallow = Sequential()
-    shallow.add(Dense(256, activation='relu', input_dim=256))
-    shallow.add(Dense(103, activation='sigmoid'))
-    shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    return model, intermediate, shallow
-
-def create_large_cnn():
-    """
-    Creates a complex convolutional neural network
-    with multiple convolutional filters
-    """
-    model = Sequential()
-    model.add(Conv1D(64, 3, activation='relu', input_shape=(47236, 1), name='conv-input'))
-    model.add(Conv1D(64, 3, activation='relu', name='conv-layer2'))
-    model.add(MaxPooling1D(3, name='mp-layer'))
-    model.add(Conv1D(128, 3, activation='relu', name='conv-layer3'))
-    model.add(Conv1D(128, 3, activation='relu', name='conv-layer4'))
-    model.add(GlobalAveragePooling1D(name='gp-layer'))
-    model.add(Dropout(0.5, name='dropout'))
-    model.add(Dense(256, activation='relu', name='dense-layer'))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(103, activation='sigmoid'))
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    intermediate = Sequential()
-    intermediate.add(Conv1D(64, 3, activation='relu', input_shape=(47236, 1), name='conv-input'))
-    intermediate.add(Conv1D(64, 3, activation='relu', name='conv-layer2'))
-    intermediate.add(MaxPooling1D(3, name='mp-layer'))
-    intermediate.add(Conv1D(128, 3, activation='relu', name='conv-layer3'))
-    intermediate.add(Conv1D(128, 3, activation='relu', name='conv-layer4'))
-    intermediate.add(GlobalAveragePooling1D(name='gp-layer'))
-    intermediate.add(Dropout(0.5, name='dropout'))
-    intermediate.add(Dense(256, activation='relu', name='dense-layer'))
-    intermediate.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-
-    shallow = Sequential()
-    shallow.add(Dense(256, activation='relu', input_dim=256))
-    shallow.add(Dense(103, activation='sigmoid'))
-    shallow.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    return model, intermediate, shallow
+    return first_model, intermediate, intermediate_transferred_model, second_model, shallow
 
 if __name__ == '__main__':
     dm, ds = create_dnn()
