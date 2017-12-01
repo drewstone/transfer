@@ -1,0 +1,12 @@
+python experiment.py --dnn --simple --name exp1 --amount $1
+python experiment.py --dnn --random --name exp2 --amount $1
+python experiment.py --dnn --ctopics --name exp3 --amount $1
+python experiment.py --dnn --etopics --name exp4 --amount $1
+python experiment.py --dnn --gtopics --name exp5 --amount $1
+python experiment.py --dnn --mtopics --name exp6 --amount $1
+python experiment.py --mlp --simple --name exp1 --amount $1
+python experiment.py --mlp --random --name exp2 --amount $1
+python experiment.py --mlp --ctopics --name exp3 --amount $1
+python experiment.py --mlp --etopics --name exp4 --amount $1
+python experiment.py --mlp --gtopics --name exp5 --amount $1
+python experiment.py --mlp --mtopics --name exp6 --amount $1

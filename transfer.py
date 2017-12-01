@@ -16,7 +16,7 @@ import plotting
 seed = 7
 np.random.seed(seed)
 
-def train_and_validate(model, data, validation_split=0.33, epochs=10):
+def train_and_validate(model, data, validation_split=0.33, epochs=2):
     """
     Trains a model over specified amount of data with specified train/validation split
     """
@@ -26,9 +26,9 @@ def train_and_validate(model, data, validation_split=0.33, epochs=10):
 
     return model, history, cbs
 
-def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.33, epochs=10):
+def transfer_and_repeat(model, intermediate, transfer_model, data, validation_split=0.33, epochs=2):
     """
-    Trains a new shallower network using second split of data
+    Trains a new network using second split of data
     given a particular data split, stored in the data directory
     """
     X, Y = data
@@ -41,9 +41,9 @@ def transfer_and_repeat(model, intermediate, shallow, data, validation_split=0.3
 
     # Fit shallower model using predictions and labels of new data
     cbs = callbacks.get_callbacks(name="transfer_training")
-    history = shallow.fit(preds, Y, validation_split=validation_split, batch_size=64, epochs=epochs, callbacks=cbs)
+    history = transfer_model.fit(preds, Y, validation_split=validation_split, batch_size=64, epochs=epochs, callbacks=cbs)
     
-    return intermediate, shallow, history, cbs
+    return intermediate, transfer_model, history, cbs
 
 def load_weights_by_name(model, transferred_model):
     save_model(model, 'temp_model')
