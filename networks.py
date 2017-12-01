@@ -1,5 +1,7 @@
 import os
 import numpy as np
+from decimal import Decimal, ROUND_HALF_UP
+
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, BatchNormalization, Dropout
 from keras.models import Model
@@ -16,13 +18,10 @@ def create(network, first_output_dim, second_output_dim, layer_count, interm_fra
 def create_dnn(first_output_dim, second_output_dim, input_dim, layer_count, interm_fraction, neuron_count):
     """
     Creates a basic deep neural network model
-    Input dimension matches a 47236 dimension feature vector
-    3 hidden layers of specified # of neurons
     """
-    
     def dnn_model_builder(layer_count, inp_dim, out_dim):
         model = Sequential()
-        for inx in range(layer_count):
+        for inx in range(int(layer_count)):
             if inx == 0:
                 model.add(Dense(neuron_count, activation='relu', input_dim=inp_dim, name='dense-{}'.format(inx+1)))
             elif inx == layer_count - 1:
@@ -37,7 +36,7 @@ def create_dnn(first_output_dim, second_output_dim, input_dim, layer_count, inte
 
     # Create intermediate layers with interm_fraction of first_model layers
     intermediate = Sequential()
-    for inx in range(round(layer_count * interm_fraction)):
+    for inx in range(layer_count-1):
         if inx == 0:
             intermediate.add(Dense(neuron_count, activation='relu', input_dim=input_dim, name='dense-{}'.format(inx+1)))
         else:
@@ -45,22 +44,20 @@ def create_dnn(first_output_dim, second_output_dim, input_dim, layer_count, inte
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
 
-    second_model = dnn_model_builder(layer_count, input_dim, second_output_dim)
-    latent_model = dnn_model_builder(layer_count, neuron_count, second_output_dim)
+    second_model = dnn_model_builder(int(Decimal(layer_count*interm_fraction).quantize(0, ROUND_HALF_UP)), input_dim, second_output_dim)
+    latent_model = dnn_model_builder(int(Decimal(layer_count*interm_fraction).quantize(0, ROUND_HALF_UP)), neuron_count, second_output_dim)
 
     return first_model, intermediate, second_model, latent_model
 
 
-def create_mlp(first_output_dim, second_output_dim, input_dim):
+def create_mlp(first_output_dim, second_output_dim, input_dim, layer_count, interm_fraction, neuron_count):
     """
-    Creates a basic deep neural network model
-    Input dimension matches a 47236 dimension feature vector
-    3 hidden layers of 256 neurons
+    Creates a network modelled after a multilayer perceptron
     """
 
     def mlp_model_builder(layer_count, inp_dim, out_dim):
         model = Sequential()
-        for inx in range(layer_count):
+        for inx in range(int(layer_count)):
             if inx == 0:
                 model.add(Dense(neuron_count, activation='relu', input_dim=inp_dim, name='dense-{}'.format(inx+1)))
             elif inx == layer_count - 1:
@@ -80,7 +77,7 @@ def create_mlp(first_output_dim, second_output_dim, input_dim):
 
     # Create intermediate layers with interm_fraction of first_model layers
     intermediate = Sequential()
-    for inx in range(round(layer_count * interm_fraction)):
+    for inx in range(layer_count-1):
         if inx == 0:
             intermediate.add(Dense(neuron_count, activation='relu', input_dim=input_dim, name='dense-{}'.format(inx+1)))
         else:
@@ -91,8 +88,8 @@ def create_mlp(first_output_dim, second_output_dim, input_dim):
 
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-    second_model = mlp_model_builder(layer_count, input_dim, second_output_dim)
-    latent_model = mlp_model_builder(layer_count, neuron_count, second_output_dim)
+    second_model = mlp_model_builder(int(Decimal(layer_count*interm_fraction).quantize(0, ROUND_HALF_UP)), input_dim, second_output_dim)
+    latent_model = mlp_model_builder(int(Decimal(layer_count*interm_fraction).quantize(0, ROUND_HALF_UP)), neuron_count, second_output_dim)
 
     return first_model, intermediate, second_model, latent_model
 

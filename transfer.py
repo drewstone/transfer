@@ -16,7 +16,7 @@ import plotting
 seed = 7
 np.random.seed(seed)
 
-def train_and_validate(model, data, validation_split=0.33, epochs=2):
+def train_and_validate(model, data, validation_split=0.33, epochs=5):
     """
     Trains a model over specified amount of data with specified train/validation split
     """
@@ -26,7 +26,7 @@ def train_and_validate(model, data, validation_split=0.33, epochs=2):
 
     return model, history, cbs
 
-def transfer_and_repeat(model, intermediate, transfer_model, data, validation_split=0.33, epochs=2):
+def transfer_and_repeat(model, intermediate, transfer_model, data, validation_split=0.33, epochs=5):
     """
     Trains a new network using second split of data
     given a particular data split, stored in the data directory

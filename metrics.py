@@ -13,6 +13,7 @@ def matthews_correlation(model, X, Y):
     threshold = np.arange(0.1,0.9,0.1)
 
     acc = []
+    perfect_acc = []
     accuracies = []
     best_threshold = np.zeros(out.shape[1])
     for i in range(out.shape[1]):
