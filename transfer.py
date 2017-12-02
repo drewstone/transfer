@@ -45,20 +45,21 @@ def transfer_and_repeat(model, intermediate, transfer_model, data, validation_sp
     
     return intermediate, transfer_model, history, cbs
 
+def validate_holdout(model, holdout, intermediate=None):
+    X, Y = holdout
+    if intermediate:
+        X = intermediate.predict(X)
+
+    return model.evaluate(X, Y)
+
+
 def load_weights_by_name(model, transferred_model):
     save_model(model, 'temp_model')
     transferred_model.load_weights('models/temp_model.h5', by_name=True)
     return transferred_model
 
-def get_data(split_type, amt):
-    data = preprocess.get_data(split_type)
-
-    first, second, indices = data
-    X1, Y1 = first
-    X2, Y2 = second
-    fst, snd = indices
-
-    return X1[:amt].todense(), Y1[:amt].todense(), X2[:amt].todense(), Y2[:amt].todense(), fst, snd
+def get_data(split_type):
+    return preprocess.get_data(split_type)
 
 def save_model(model, name):
     if not os.path.exists('./models'):
