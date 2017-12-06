@@ -19,20 +19,20 @@ def create_dnn(first_output_dim, second_output_dim, input_dim, first_layer_count
     """
     Creates a basic deep neural network model
     """
-    def dnn_model_builder(layer_count, inp_dim, out_dim, loss):
+    def dnn_model_builder(layer_count, inp_dim, out_dim, loss, act):
         model = Sequential()
         for inx in range(int(layer_count)):
             if inx == 0:
                 model.add(Dense(neuron_count, activation='relu', input_dim=inp_dim, name='dense-{}'.format(inx+1)))
             elif inx == layer_count - 1:
-                model.add(Dense(out_dim, activation='softmax', name='output-softmax'))
+                model.add(Dense(out_dim, activation=act, name='output-{}'.format(act)))
                 model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
                 return model
             else:
                 model.add(Dense(neuron_count, activation='relu', name='dense-{}'.format(inx+1)))
 
     # Create first model with specified number of layers
-    first_model = dnn_model_builder(first_layer_count, input_dim, first_output_dim, loss='categorical_crossentropy')
+    first_model = dnn_model_builder(first_layer_count, input_dim, first_output_dim, loss='categorical_crossentropy', act='softmax')
 
     # Create intermediate layers with interm_fraction of first_model layers
     intermediate = Sequential()
@@ -44,8 +44,8 @@ def create_dnn(first_output_dim, second_output_dim, input_dim, first_layer_count
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
 
-    second_model = dnn_model_builder(second_layer_count, input_dim, second_output_dim, loss='binary_crossentropy')
-    latent_model = dnn_model_builder(second_layer_count, neuron_count, second_output_dim, loss='binary_crossentropy')
+    second_model = dnn_model_builder(second_layer_count, input_dim, second_output_dim, loss='binary_crossentropy', act='sigmoid')
+    latent_model = dnn_model_builder(second_layer_count, neuron_count, second_output_dim, loss='binary_crossentropy', act='sigmoid')
 
     return first_model, intermediate, second_model, latent_model
 
@@ -55,13 +55,13 @@ def create_mlp(first_output_dim, second_output_dim, input_dim, first_layer_count
     Creates a network modelled after a multilayer perceptron
     """
 
-    def mlp_model_builder(layer_count, inp_dim, out_dim, loss):
+    def mlp_model_builder(layer_count, inp_dim, out_dim, loss, act):
         model = Sequential()
         for inx in range(int(layer_count)):
             if inx == 0:
                 model.add(Dense(neuron_count, activation='relu', input_dim=inp_dim, name='dense-{}'.format(inx+1)))
             elif inx == layer_count - 1:
-                model.add(Dense(out_dim, activation='softmax', name='output-softmax'))
+                model.add(Dense(out_dim, activation=act, name='output-{}'.format(act)))
                 model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
                 return model
             else:
@@ -73,7 +73,7 @@ def create_mlp(first_output_dim, second_output_dim, input_dim, first_layer_count
         
         
     # Create first model with specified number of layers
-    first_model = mlp_model_builder(first_layer_count, input_dim, first_output_dim, loss='categorical_crossentropy')
+    first_model = mlp_model_builder(first_layer_count, input_dim, first_output_dim, loss='categorical_crossentropy', act='softmax')
 
     # Create intermediate layers with interm_fraction of first_model layers
     intermediate = Sequential()
@@ -88,11 +88,10 @@ def create_mlp(first_output_dim, second_output_dim, input_dim, first_layer_count
 
     intermediate.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-    second_model = mlp_model_builder(second_layer_count, input_dim, second_output_dim, loss='binary_crossentropy')
-    latent_model = mlp_model_builder(second_layer_count, neuron_count, second_output_dim, loss='binary_crossentropy')
+    second_model = mlp_model_builder(second_layer_count, input_dim, second_output_dim, loss='binary_crossentropy', act='sigmoid')
+    latent_model = mlp_model_builder(second_layer_count, neuron_count, second_output_dim, loss='binary_crossentropy', act='sigmoid')
 
     return first_model, intermediate, second_model, latent_model
 
 if __name__ == '__main__':
     dm, ds = create_dnn()
-    cm, cs = create_embedded_cnn()

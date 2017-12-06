@@ -14,7 +14,7 @@ def plot_acc(name, first_history, second_history, latent_history):
     plt.plot(second_history.history["val_acc"], label="second test", linestyle="--", color="b")
     plt.plot(latent_history.history["acc"], label="latent train", color="c")
     plt.plot(latent_history.history["val_acc"], label="latent test", linestyle="--", color="c")
-    plt.title("model accuracies")
+    plt.title("{} model accuracies".format(name))
     plt.ylabel("accuracy")
     plt.xlabel("epoch")
     plt.legend(loc="lower right")
