@@ -5,14 +5,15 @@ import transfer
 import networks
 import plotting 
 
-def run(name, network, amount, val_split, first_layers, second_layers, interm_fraction, neuron_count_per_layer):
+# data_frac: fraction of the amount (data) that we want to train the first network on
+def run(name, network, amount, data_frac, val_split, first_layers, second_layers, interm_fraction, neuron_count_per_layer):
     until = amount*2
 
     # Fetch data and make simple split of data
     X, firstY, secondY = transfer.get_data('coarse')
 
     # Split everything in half to make sure we aren't using overlapping data
-    X1, X2, Y1, Y2 = X[:int(X.shape[0]/2)], X[int(X.shape[0]/2):], firstY[:int(X.shape[0]/2)], secondY[int(X.shape[0]/2):]
+    X1, X2, Y1, Y2 = X[:int(X.shape[0]*data_frac)], X[int(X.shape[0]*data_frac):], firstY[:int(X.shape[0]*data_frac)], secondY[int(X.shape[0]*data_frac):]
 
     # Find indices with only zeros to remove them in first data split
     zero_indices = []
@@ -84,6 +85,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--network')
     parser.add_argument('--amount', '-a')
+    parser.add_argument('--data_frac')
     parser.add_argument('--first_layers')
     parser.add_argument('--second_layers')
     parser.add_argument('--fraction', '-f')
@@ -102,6 +104,7 @@ if __name__ == '__main__':
 
     run(network=args.network,
         amount=int(float(args.amount)),
+        data_frac=float(args.data_frac),
         val_split=0.5,
         name=args.name,
         first_layers=int(float(args.first_layers)),
