@@ -61,6 +61,10 @@ def load_weights_by_name(model, transferred_model):
 def get_data(split_type):
     return preprocess.get_data(split_type)
 
+def save_intermediate(model, intermediate, name):
+    intermediate = load_weights_by_name(model, intermediate)
+    save_model(intermediate, name.replace("first", "intermediate").split(".h5")[0])
+
 def save_model(model, name):
     if not os.path.exists('./models'):
         os.makedirs('./models')
